@@ -10,6 +10,16 @@ public class PlayerCursor : MonoBehaviour
     private Grid grid;
     private Unit selectedUnit;
 
+    private AudioSource audioSource;
+    public AudioClip audioMoveCursor;
+    public AudioClip audioSelect;
+    public AudioClip audioFailMove;
+
+    private void Awake()
+    {
+        audioSource = this.GetComponent<AudioSource>();
+    }
+
     private void Start()
     {
         grid = FindObjectOfType<Grid>();
@@ -52,11 +62,12 @@ public class PlayerCursor : MonoBehaviour
             // if the move is invalid, reverse the transform translation
             if (!isValidLocation)
             {
+                audioSource.PlayOneShot(audioFailMove);
                 this.transform.Translate(movementDirection * -1);
             }
             else
             {
-                this.GetComponent<AudioSource>().Play();
+                audioSource.PlayOneShot(audioMoveCursor);
 
                 // if a unit is selected, it should move with the cursor.
                 if (selectedUnit != null)
@@ -75,12 +86,14 @@ public class PlayerCursor : MonoBehaviour
             if (selectedUnit != null)
             {
                 selectedUnit = null;
+                audioSource.PlayOneShot(audioSelect);
                 Debug.Log("unselected unit.");
             }
             else
             {
                 // get the unit under the selector.
                 selectedUnit = grid.Get((int)this.transform.position.x, (int)this.transform.position.y);
+                audioSource.PlayOneShot(audioSelect);
                 Debug.Log($"selected unit: {selectedUnit}");
             }
         }
