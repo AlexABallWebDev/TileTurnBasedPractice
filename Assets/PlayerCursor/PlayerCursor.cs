@@ -68,28 +68,37 @@ public class PlayerCursor : MonoBehaviour
             else
             {
                 audioSource.PlayOneShot(audioMoveCursor);
-
-                // if a unit is selected, it should move with the cursor.
-                if (selectedUnit != null)
-                {
-                    selectedUnit.Move((int)this.transform.position.x, (int)this.transform.position.y);
-                }
             }
         }
     }
 
     public void Select(InputAction.CallbackContext context)
     {
+        Unit unitAtCursor = grid.Get((int)this.transform.position.x, (int)this.transform.position.y);
         if (context.phase.Equals(InputActionPhase.Started))
         {
-            // if unit already selected, stop selecting the unit.
-            if (selectedUnit != null)
+            // if unit is already selected, pop up menu with options.
+            if (selectedUnit != null &&
+                unitAtCursor == null)
             {
+                // TODO: menu should appear
+
+                // wait option causes the unit to be moved and unselected.
+                selectedUnit.Move((int)this.transform.position.x, (int)this.transform.position.y);
                 selectedUnit = null;
                 audioSource.PlayOneShot(audioSelect);
                 Debug.Log("unselected unit.");
             }
-            else
+            // if unit already selected, but there is already a unit in the cursor's location,
+            // do not allow the unit to be moved here.
+            else if (selectedUnit != null &&
+                unitAtCursor != null)
+            {
+                audioSource.PlayOneShot(audioFailMove);
+                Debug.Log($"Failed to move unit {selectedUnit} since there is already a unit at this location.");
+            }
+            // no unit is selected, attempt to select a unit at the cursor's location
+            else //if (selectedUnit == null)
             {
                 // get the unit under the selector.
                 selectedUnit = grid.Get((int)this.transform.position.x, (int)this.transform.position.y);
